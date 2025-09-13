@@ -1,0 +1,314 @@
+<html lang="zh-CN"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>致病机理连线</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .connection-section {
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .unified-title {
+            background-color: #0066cc;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .title-section {
+            width: 28%;
+            text-align: center;
+        }
+        .title-arrow {
+            margin: 0 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .item-group {
+            display: flex;
+            margin-bottom: 20px;
+            gap: 60px;
+            justify-content: center;
+        }
+        .item-column {
+            flex: 0 0 28%;
+            box-sizing: border-box;
+        }
+        .column-header {
+            text-align: center;
+            font-weight: bold;
+            color: #0066cc;
+            margin-bottom: 10px;
+            padding: 8px;
+            border-bottom: 2px solid #0066cc;
+        }
+        .item {
+            padding: 10px;
+            margin: 8px 0;
+            background-color: #e6f2ff;
+            cursor: pointer;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        .item:hover {
+            background-color: #b3d9ff;
+            transform: translateY(-2px);
+        }
+        .item.selected {
+            background-color: #99ccff;
+            border-color: #0066cc;
+        }
+        .arrow {
+            position: absolute;
+            height: 3px;
+            background-color: #ff6600;
+            z-index: 1;
+            transform-origin: left center;
+            box-shadow: 0 0 3px rgba(255, 102, 0, 0.6);
+        }
+        .arrow::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: -5px;
+            width: 0;
+            height: 0;
+            border-left: 6px solid #ff6600;
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+        }
+        .message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+            border: 1px solid #ebccd1;
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-section">
+        <div class="unified-title">
+            <div class="title-section">致病物质（A组）</div>
+            <div class="title-arrow">→</div>
+            <div class="title-section">致病机制（B组）</div>
+            <div class="title-arrow">→</div>
+            <div class="title-section">疾病结局（C组）</div>
+        </div>
+
+        <div class="item-group">
+            <div class="item-column">
+                <div class="column-header">致病物质（A组）</div>
+                <div class="item" data-group="A" data-id="A1">1. 荚膜多糖</div>
+                <div class="item" data-group="A" data-id="A2">2. 硫酸脑苷脂</div>
+                <div class="item" data-group="A" data-id="A3">3. 结核菌素蛋白</div>
+                <div class="item" data-group="A" data-id="A4">4. PtpB磷酸酶</div>
+            </div>
+
+            <div class="item-column">
+                <div class="column-header">致病机制（B组）</div>
+                <div class="item" data-group="B" data-id="B1">激活IV型超敏反应</div>
+                <div class="item" data-group="B" data-id="B2">黏附肺泡巨噬细胞受体</div>
+                <div class="item" data-group="B" data-id="B3">去磷酸化PI4P/PI(4,5)P2</div>
+                <div class="item" data-group="B" data-id="B4">阻断吞噬体-溶酶体融合</div>
+            </div>
+
+            <div class="item-column">
+                <div class="column-header">疾病结局（C组）</div>
+                <div class="item" data-group="C" data-id="C1">肉芽肿、固化</div>
+                <div class="item" data-group="C" data-id="C2">吸附感染</div>
+                <div class="item" data-group="C" data-id="C3">胞内潜伏感染</div>
+                <div class="item" data-group="C" data-id="C4">抑制细胞焦亡</div>
+            </div>
+        </div>
+
+        <div class="message success" id="successMessage">连线正确！</div>
+        <div class="message error" id="errorMessage">连线错误，请重试！</div>
+    </div>
+
+    <!-- 提示音效 -->
+    <audio id="successSound" preload="auto">
+        <source src="https://www.soundjay.com/buttons/sounds/button-3.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="errorSound" preload="auto">
+        <source src="https://www.soundjay.com/buttons/sounds/button-11.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // 正确连线关系
+        const correctConnections = {
+            'A1': 'B2',
+            'A2': 'B4',
+            'A3': 'B1',
+            'A4': 'B3',
+            'B1': 'C1',
+            'B2': 'C2',
+            'B3': 'C4',
+            'B4': 'C3'
+        };
+
+        let selectedItems = {
+            A: null,
+            B: null,
+            C: null
+        };
+        
+        // 获取音效元素
+        const successSound = document.getElementById('successSound');
+        const errorSound = document.getElementById('errorSound');
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // 获取所有项目元素
+        const items = document.querySelectorAll('.item');
+
+        // 隐藏消息
+        function hideMessages() {
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
+        }
+
+        // 显示消息
+        function showMessage(type) {
+            hideMessages();
+            if (type === 'success') {
+                successMessage.style.display = 'block';
+            } else {
+                errorMessage.style.display = 'block';
+            }
+            
+            // 3秒后自动隐藏消息
+            setTimeout(hideMessages, 3000);
+        }
+
+        // 为每个项目添加点击事件
+        items.forEach(item => {
+            item.addEventListener('click', function() {
+                const group = this.getAttribute('data-group');
+                const id = this.getAttribute('data-id');
+
+                // 取消同组已选项目
+                document.querySelectorAll(`.item[data-group="${group}"]`).forEach(i => {
+                    i.classList.remove('selected');
+                });
+
+                // 选择当前项目
+                this.classList.add('selected');
+                selectedItems[group] = this;
+
+                // 检查是否可以连线
+                if (selectedItems.A && selectedItems.B && selectedItems.C) {
+                    const aId = selectedItems.A.getAttribute('data-id');
+                    const bId = selectedItems.B.getAttribute('data-id');
+                    const cId = selectedItems.C.getAttribute('data-id');
+
+                    if (correctConnections[aId] === bId && correctConnections[bId] === cId) {
+                        // 全部正确
+                        drawArrow(selectedItems.A, selectedItems.B);
+                        drawArrow(selectedItems.B, selectedItems.C);
+                        successSound.play();
+                        showMessage('success');
+                    } else {
+                        // 错误
+                        errorSound.play();
+                        showMessage('error');
+                    }
+
+                    // 重置选择
+                    resetSelections();
+                } else if (selectedItems.A && selectedItems.B) {
+                    const aId = selectedItems.A.getAttribute('data-id');
+                    const bId = selectedItems.B.getAttribute('data-id');
+
+                    if (correctConnections[aId] === bId) {
+                        drawArrow(selectedItems.A, selectedItems.B);
+                        successSound.play();
+                        showMessage('success');
+                    } else {
+                        errorSound.play();
+                        showMessage('error');
+                    }
+
+                    // 重置选择
+                    resetSelections();
+                } else if (selectedItems.B && selectedItems.C) {
+                    const bId = selectedItems.B.getAttribute('data-id');
+                    const cId = selectedItems.C.getAttribute('data-id');
+
+                    if (correctConnections[bId] === cId) {
+                        drawArrow(selectedItems.B, selectedItems.C);
+                        successSound.play();
+                        showMessage('success');
+                    } else {
+                        errorSound.play();
+                        showMessage('error');
+                    }
+
+                    // 重置选择
+                    resetSelections();
+                }
+            });
+        });
+
+        // 重置选择状态
+        function resetSelections() {
+            if (selectedItems.A) selectedItems.A.classList.remove('selected');
+            if (selectedItems.B) selectedItems.B.classList.remove('selected');
+            if (selectedItems.C) selectedItems.C.classList.remove('selected');
+            selectedItems = { A: null, B: null, C: null };
+        }
+
+        // 绘制箭头连线
+        function drawArrow(startElement, endElement) {
+            // 移除之前的箭头（如果需要每次只显示最新连线，可以取消注释）
+            // document.querySelectorAll('.arrow').forEach(arrow => arrow.remove());
+            
+            const startRect = startElement.getBoundingClientRect();
+            const endRect = endElement.getBoundingClientRect();
+
+            const startX = startRect.right + window.scrollX;
+            const startY = startRect.top + startRect.height / 2 + window.scrollY;
+            const endX = endRect.left + window.scrollX;
+            const endY = endRect.top + endRect.height / 2 + window.scrollY;
+
+            const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+            const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
+
+            const arrow = document.createElement('div');
+            arrow.className = 'arrow';
+            arrow.style.width = `${length}px`;
+            arrow.style.left = `${startX}px`;
+            arrow.style.top = `${startY}px`;
+            arrow.style.transform = `rotate(${angle}deg)`;
+
+            document.body.appendChild(arrow);
+        }
+    </script>
+
+
+</body></html>
